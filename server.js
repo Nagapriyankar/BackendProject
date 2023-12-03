@@ -1,11 +1,15 @@
 const express = require('express')
 const app = express()
+const mongoose = require('mongoose')
+const config = require('./utils/config')
+const { info, error } = require('./utils/logger');
+const cors = require('cors')
+const notesRouter = require('./controllers/notes')
 
 //middleware
-
+app.use(cors());
 app.use(express.json())
 
-//make server listen to the HTTP req
-const HOSTNAME = '127.0.0.1'
-const PORT = '3000'
-app.listen(PORT, () => { console.log(`Server started running! http://${HOSTNAME}:${PORT}/`) })
+app.use('/api/notes', notesRouter)
+
+module.exports = app;
