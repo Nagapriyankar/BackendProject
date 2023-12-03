@@ -1,7 +1,5 @@
-//import the library http
-
-const http = require('http')
-
+const express = require('express')
+const app = express()
 //data
 
 let data = [
@@ -22,16 +20,18 @@ let data = [
     }
 ]
 
-//create http web server
+//define endpoints
+//to get root route
+app.get('/', (request, response) => {
+    response.send('<h1>Hello World!  I Love India!<h1>');
+})
 
-const app = http.createServer((request, response) => {
-    /*   response.writeHead(200, { 'Content-Type': 'text/plain' })
-     response.end('HelloWORLD!')  */
-    response.statusCode = 200
-    response.setHeader('Content-Type', 'application/json')
-    response.end(JSON.stringify(data))
+//to get all the data
+app.get('/api/data', (request, response) => {
+    response.json(data)
 })
 
 //make server listen to the HTTP req
-const PORT = '3001'
-app.listen(PORT, () => { console.log("Server started running!") })
+const HOSTNAME = '127.0.0.1'
+const PORT = '3000'
+app.listen(PORT, () => { console.log(`Server started running! http://${HOSTNAME}:${PORT}/`) })
