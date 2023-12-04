@@ -31,6 +31,21 @@ app.get('/api/data', (request, response) => {
     response.json(data)
 })
 
+//to fetch single note
+app.get('/api/data/:id', (request, response) => { 
+    const id = request.params.id
+
+    //find notes with id
+    const note = data.find(note => note.id == id)
+    if (note) {
+        response.status(200).json(note)
+    }
+    else { 
+        response.status(404).json({messsage : 'ID DOESNOT EXIST'})
+    }
+})
+
+
 //make server listen to the HTTP req
 const HOSTNAME = '127.0.0.1'
 const PORT = '3000'
