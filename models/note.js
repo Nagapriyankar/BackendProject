@@ -1,16 +1,10 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-
-//define a schema
-
+// define a schema
 const noteSchema = new mongoose.Schema({
     id: Number,
     content: String,
     important: Boolean
-})
+});
 
-//create modals
-
-const Note = mongoose.model('Note', noteSchema, 'notes')
-
-module.exports = Note
+module.exports = mongoose.model('Note', noteSchema, 'notes');
