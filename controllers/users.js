@@ -1,5 +1,6 @@
 const userRouter = require('express').Router();
 const User = require('../models/user')
+const bcrypt = require('bcrypt')
 
 //endpoints to get all users
 userRouter.get('/', (request, response) => {
@@ -12,14 +13,24 @@ userRouter.get('/', (request, response) => {
         })
 })
 
-//endpoint to create new user upon user request
-userRouter.post('/', (request, response) => {
-    const user = new User(request.body)
+//endpoint - user reqistration with bcrypt
+userRouter.post('/', async (request, response) => {
+    //get the user details from the request body
+    const { name, userName, password } = request.body
 
-    user.save()
-        .then(() => {
-            response.status(201).json({ message: 'user created successfully' })
-        })
+    //hash the pwd and store in the password hash field(install bcrypt)
+    const passwordHash = await bcrypt.hash(password, 10)
+    const user = new User({
+        name,
+        userName,
+        passwordHash
+    })
+
+    //saveuser object
+    const savedUser = await user.save()
+
+    //send the response back
+    response.json(savedUser)
 })
 
 //endpoint to getuser by id
