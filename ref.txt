@@ -1,0 +1,26 @@
+LOGIN FLOW:
+-----------------
+> Login using username and password
+> a token will be generated on successful Login
+> use this token on all api calls
+
+CREATE NEW NOTE AFTER LOGIN WITH A USERNAME AND PASSWORD FLOW
+-----------------------
+> fetch token , username from request.body and token from request.get('authorization')
+> decode token and get below details
+            {
+                userName: 'ridhin@gmail.com',
+                id: '657c762f6eafd5a962cb21e9',
+                iat: 1702659635,
+                exp: 1702663235
+            }   
+> fetch user details from user collection using user_id from ddecoded token
+> create a new note object with request.body and user_id
+> save this note to database
+> take note id from savedNote
+> concat this note id to notes array in user taken in step 3
+> save the user  to database
+
+
+GET ALL notes
+-----------------------------

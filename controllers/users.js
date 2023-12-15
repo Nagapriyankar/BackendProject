@@ -18,6 +18,13 @@ userRouter.post('/', async (request, response) => {
     //get the user details from the request body
     const { name, userName, password } = request.body
 
+    //check if user already exists
+    const userExists = await User.findOne({ userName })
+    
+    //if user exits, send an error message 
+    if (userExists)
+        return response.status(409).json({message: 'User Already exists'})
+
     //hash the pwd and store in the password hash field(install bcrypt)
     const passwordHash = await bcrypt.hash(password, 10)
     const user = new User({

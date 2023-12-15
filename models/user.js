@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     updatedAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    notes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Note'
+    }]
 })
 module.exports = mongoose.model('User', userSchema, 'users')

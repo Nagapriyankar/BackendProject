@@ -1,5 +1,8 @@
 const notesRouter = require('express').Router();
 const Note = require('../models/note');
+const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
 
 // endpoint to get all the notes
 notesRouter.get('/', (request, response) => {
@@ -15,16 +18,59 @@ notesRouter.get('/query', (request, response) => {
     console.log(request.query.id)
     console.log(request.query.browser)
     response.status(200).send(request.query)
- })
+})
+ 
+
+const getTokenFrom = request => { 
+    const auth = request.get('authorization')
+    if (auth && auth.toLowerCase().startsWith('bearer ')) {
+        return auth.substring(7)
+    }
+    return null
+}
+
 
 // endpoint to create a new resource/note based on the request data
-notesRouter.post('/', (request, response) => {
-    const note = new Note(request.body);
+notesRouter.post('/', async(request, response) => {
+    //get new note from req body
+    const noteObject = request.body
 
-    note.save()
-        .then(() => {
-            response.status(201).json({ message: note });
-        });
+    //get the token from the authorization header
+    const token = getTokenFrom(request)
+
+    //verify the token and decode user who crreated th note
+    const decodedToken = jwt.verify(token, config.JWT_SECRET)
+
+    //if token missing or invalid or return an error
+    if (!token || !decodedToken.id) { 
+        return response.status(401).json({message: 'Token missing or Invalid'})
+    }
+
+    //if token is valid, get the user who created
+    const user = await User.findById(decodedToken.id)
+
+    //create  a new note object
+    const note = new Note({
+        content: noteObject.content,
+        important: noteObject.important || false,
+        user: user._id
+        
+    })
+
+    //save thenote to the database
+    const savedNote = await note.save()
+
+    //add thenote id to the user's note array property
+    user.notes = user.notes.concat(savedNote._id)
+
+    //save thr updated user Object to the database
+    await user.save()
+
+    //
+    response.json({
+        message: 'note created successful', note: savedNote
+    
+    })
 });
 
 // endpoint to fetch a single note/resource based on id
