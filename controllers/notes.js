@@ -1,36 +1,17 @@
 const notesRouter = require('express').Router();
 const Note = require('../models/note');
 const User = require('../models/user')
-const jwt = require('jsonwebtoken')
-const config = require('../utils/config')
+const {verifyToken} = require('../middlewares/auth')
 
 // endpoint to get all the notes
-notesRouter.get('/', async(request, response) => {
+notesRouter.get('/', verifyToken,  async(request, response) => {
 
-    //get the token from the authorization header
-    const token = getTokenFrom(request)
-
-    //if token missing return error message
-    if (!token) { 
-        return response.status(401).json({ message: 'Token missing'})
-    }
-        
-    let decodedToken
-    try {
-        //verify the token and decode user who crreated th note
-        decodedToken = jwt.verify(token, config.JWT_SECRET)
-    } catch (error){ 
-        //if token Expires or invalid or return an error
-        if(error.name == 'TokenExpiredError')
-            return response.status(401).json({ message: 'Token Expired' })
-        else
-            return response.status(401).json({ message: 'Token Invalid' })
-
-    }
+    //get userId from requst object 
+    const userId = request.userId
 
     //if token is valid, get the user who created the notes and populate notes array to view all notes created by the user
     const user = await User
-        .findById(decodedToken.id)
+        .findById(userId)
         .select('_id userName name createdAt updatedAt notes')
         .populate('notes', { user: 0, __v: 0 })
 
@@ -40,47 +21,20 @@ notesRouter.get('/', async(request, response) => {
 
 });
 
-//query param to get all notes
-notesRouter.get('/query', (request, response) => {
-    console.log(request.query)
-    console.log(request.query.id)
-    console.log(request.query.browser)
-    response.status(200).send(request.query)
-})
- 
-
-const getTokenFrom = request => { 
-    const auth = request.get('authorization')
-    if (auth && auth.toLowerCase().startsWith('bearer ')) {
-        return auth.substring(7)
-    }
-    return null
-}
-
 
 // endpoint to create a new resource/note based on the request data
-notesRouter.post('/', async(request, response) => {
-    //get new note from req body
-    const noteObject = request.body
-
-    //get the token from the authorization header
-    const token = getTokenFrom(request)
-
-    //verify the token and decode user who crreated th note
-    const decodedToken = jwt.verify(token, config.JWT_SECRET)
-
-    //if token missing or invalid or return an error
-    if (!token || !decodedToken.id) { 
-        return response.status(401).json({message: 'Token missing or Invalid'})
-    }
+notesRouter.post('/', verifyToken, async(request, response) => {
+   
+    //get userId from requst object 
+    const userId = request.userId
 
     //if token is valid, get the user who created
-    const user = await User.findById(decodedToken.id)
+    const user = await User.findById(userId)
 
     //create  a new note object
     const note = new Note({
-        content: noteObject.content,
-        important: noteObject.important || false,
+        content: request.body.content,
+        important: request.body.important || false,
         user: user._id
         
     })
