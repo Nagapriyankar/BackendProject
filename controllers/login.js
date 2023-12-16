@@ -23,15 +23,14 @@ loginRouter.post('/', async (request, response) => {
     //if password doesnot match send error message
     if (!isAuthenticated)
         return response.status(401).json({ message: 'invalid password' })
-    
+
     //if pwd matched ,generate a token
     const token = jwt.sign({
         userName: user.userName,
         id: user._id
-    }, config.JWT_SECRET,  {expiresIn : '1h'}) 
-
+    }, config.JWT_SECRET, { expiresIn: '1h' })
     //SEND THE TOKEN BACK TO USER
-    response.status(200).json({token, userName: user.userName, name: user.name})
+    response.status(200).json({ token, userName: user.userName, name: user.name })
 })
 
 

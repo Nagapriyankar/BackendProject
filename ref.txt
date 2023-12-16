@@ -24,3 +24,14 @@ CREATE NEW NOTE AFTER LOGIN WITH A USERNAME AND PASSWORD FLOW
 
 GET ALL notes
 -----------------------------
+> fetch token , username from request.body and token from request.get('authorization')
+> decode token and get below details
+            {
+                userName: 'ridhin@gmail.com',
+                id: '657c762f6eafd5a962cb21e9',
+                iat: 1702659635,
+                exp: 1702663235
+            }   
+> fetch user details from user collection using user_id from ddecoded token
+> in the previous step, add populate method(default) to view all notes created by the user
+> send the result as response

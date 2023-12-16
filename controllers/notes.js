@@ -5,11 +5,39 @@ const jwt = require('jsonwebtoken')
 const config = require('../utils/config')
 
 // endpoint to get all the notes
-notesRouter.get('/', (request, response) => {
-    Note.find({}, {})
-        .then(notes => {
-            response.status(200).json(notes);
-        })
+notesRouter.get('/', async(request, response) => {
+
+    //get the token from the authorization header
+    const token = getTokenFrom(request)
+
+    //if token missing return error message
+    if (!token) { 
+        return response.status(401).json({ message: 'Token missing'})
+    }
+        
+    let decodedToken
+    try {
+        //verify the token and decode user who crreated th note
+        decodedToken = jwt.verify(token, config.JWT_SECRET)
+    } catch (error){ 
+        //if token Expires or invalid or return an error
+        if(error.name == 'TokenExpiredError')
+            return response.status(401).json({ message: 'Token Expired' })
+        else
+            return response.status(401).json({ message: 'Token Invalid' })
+
+    }
+
+    //if token is valid, get the user who created the notes and populate notes array to view all notes created by the user
+    const user = await User
+        .findById(decodedToken.id)
+        .select('_id userName name createdAt updatedAt notes')
+        .populate('notes', { user: 0, __v: 0 })
+
+    //send the user details to response
+    response.json(user.notes)
+
+
 });
 
 //query param to get all notes
